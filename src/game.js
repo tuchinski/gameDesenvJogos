@@ -15,7 +15,9 @@ const config = {}
 config.RES_X = 1280 // resolucao HD
 config.RES_Y = 720
 
-config.PLAYER_ACCELERATION  = 600
+config.GRAVITY_VALOR = 1000
+
+config.PLAYER_ACCELERATION  = 400
 config.PLAYER_TURN_VELOCITY = 350
 config.PLAYER_MAX_VELOCITY  = 300
 config.PLAYER_HEALTH        = 30
@@ -50,7 +52,8 @@ function preload() {
     game.load.image('shot', 'assets/shot.png')
     game.load.image('wall', 'assets/wall.png')
     game.load.image('fog', 'assets/fog.png')
-    game.load.text('map1', 'assets/map1.txt');  // arquivo txt do mapa
+    game.load.text('map1', 'assets/map1.txt')  // arquivo txt do mapa
+    game.load.image('playerImg', 'assets/wabbit.png')
 }
 
 function createBullets() {
@@ -77,9 +80,24 @@ function create() {
         0, 0, game.width, game.height, 'fog')
     fog.tileScale.setTo(7,7)
     fog.alpha = 0.4
+
+   
     
     obstacles = game.add.group()
     createMap()
+
+    player1 = new PlayerTeste(game, 50, game.height - 34,
+                                'playerImg', 0xff0000, createBullets(), {   
+            left: Phaser.Keyboard.LEFT,
+            right: Phaser.Keyboard.RIGHT,
+            up: Phaser.Keyboard.UP,
+            down: Phaser.Keyboard.DOWN,
+            fire: Phaser.Keyboard.L
+            })
+    game.add.existing(player1)
+
+    /** 
+     * cria os aviões
 
     player1 = new Player(game, game.width*2/9, game.height/2, 
                         'plane1', 0xff0000, createBullets(), {   
@@ -100,13 +118,16 @@ function create() {
     game.add.existing(player1)
     game.add.existing(player2)
     player2.angle = 180
+    */
 
+    /** 
     hud = {
         text1: createHealthText(game.width*1/9, 50, 'PLAYER 1: 20'),
         text2: createHealthText(game.width*8/9, 50, 'PLAYER 2: 20'),
         fps: createHealthText(game.width*6/9, 50, 'FPS'),
     }
     updateHud()
+    */
 
     var fps = new FramesPerSecond(game, game.width*3/9, 50)
     game.add.existing(fps)
@@ -169,34 +190,34 @@ function createHealthText(x, y, text) {
     return text
 }
 
-function updateBullets(bullets) {
-    bullets.forEach(function(bullet) {
-        game.world.wrap(bullet, 0, true)
-    })
-}
+// function updateBullets(bullets) {
+//     bullets.forEach(function(bullet) {
+//         game.world.wrap(bullet, 0, true)
+//     })
+// }
 
 function update() {
-    hud.fps.text = `FPS ${game.time.fps}`
+  //  hud.fps.text = `FPS ${game.time.fps}`
 
     sky.tilePosition.x += 0.5
     fog.tilePosition.x += 0.3
  
     //moveAndStop(player1)
-    updateBullets(player1.bullets)
-    updateBullets(player2.bullets)
+    //updateBullets(player1.bullets)
+    //updateBullets(player2.bullets)
 
-    game.physics.arcade.collide(player1, player2)
-    game.physics.arcade.collide(
-        player1, player2.bullets, hitPlayer)
-    game.physics.arcade.collide(
-        player2, player1.bullets, hitPlayer)
+    // game.physics.arcade.collide(player1, player2)
+    // game.physics.arcade.collide(
+    //     player1, player2.bullets, hitPlayer)
+    // game.physics.arcade.collide(
+    //     player2, player1.bullets, hitPlayer)
 
-    game.physics.arcade.collide(player1, map)
-    game.physics.arcade.collide(player2, map)
-    game.physics.arcade.collide(
-        player1.bullets, map, killBullet)
-    game.physics.arcade.collide(
-        player2.bullets, map, killBullet)
+    // game.physics.arcade.collide(player1, map)
+    // game.physics.arcade.collide(player2, map)
+    // game.physics.arcade.collide(
+    //     player1.bullets, map, killBullet)
+    // game.physics.arcade.collide(
+    //     player2.bullets, map, killBullet)
 }
 
 function killBullet(bullet, wall) {
@@ -212,12 +233,14 @@ function hitPlayer(player, bullet) {
     }
 }
 
-function updateHud() {
-    hud.text1.text = `PLAYER 1: ${player1.health}`
-    hud.text2.text = 'PLAYER 2: ' + player2.health
-}
+// function updateHud() {
+//     hud.text1.text = `PLAYER 1: ${player1.health}`
+//     hud.text2.text = 'PLAYER 2: ' + player2.health
+// }
 
 function render() {
+   // game.debug.body(player1)
+
     obstacles.forEach( function(obj) {
         game.debug.body(obj)
     })
