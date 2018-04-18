@@ -15,7 +15,7 @@ const config = {}
 config.RES_X = 1280 // resolucao HD
 config.RES_Y = 720
 
-config.GRAVITY_VALOR = 1000
+config.GRAVITY_VALOR = 2050
 
 config.PLAYER_ACCELERATION  = 400
 config.PLAYER_TURN_VELOCITY = 350
@@ -88,13 +88,24 @@ function create() {
 
     player1 = new PlayerTeste(game, 50, game.height - 34,
                                 'playerImg', 0xff0000, createBullets(), {   
+            left: Phaser.Keyboard.A,
+            right: Phaser.Keyboard.D,
+            up: Phaser.Keyboard.W,
+            down: Phaser.Keyboard.S,
+            fire: Phaser.Keyboard.L
+            })
+    game.add.existing(player1)
+
+    player2 = new PlayerTeste(game, game.width - 50, game.height - 34,
+                                'playerImg', 0x00ff00, createBullets(), {   
             left: Phaser.Keyboard.LEFT,
             right: Phaser.Keyboard.RIGHT,
             up: Phaser.Keyboard.UP,
             down: Phaser.Keyboard.DOWN,
             fire: Phaser.Keyboard.L
             })
-    game.add.existing(player1)
+    game.add.existing(player2)
+
 
     /** 
      * cria os aviões
@@ -120,17 +131,17 @@ function create() {
     player2.angle = 180
     */
 
-    /** 
+    
     hud = {
         text1: createHealthText(game.width*1/9, 50, 'PLAYER 1: 20'),
         text2: createHealthText(game.width*8/9, 50, 'PLAYER 2: 20'),
-        fps: createHealthText(game.width*6/9, 50, 'FPS'),
+        fps: createHealthText((game.width/2), 50, 'FPS'),
     }
     updateHud()
-    */
+    
 
-    var fps = new FramesPerSecond(game, game.width*3/9, 50)
-    game.add.existing(fps)
+    //var fps = new FramesPerSecond(game, game.width*3/9, 50)
+    //game.add.existing(fps)
 
     var fullScreenButton = game.input.keyboard.addKey(Phaser.Keyboard.ONE)
     fullScreenButton.onDown.add(toggleFullScreen)
@@ -197,10 +208,15 @@ function createHealthText(x, y, text) {
 // }
 
 function update() {
-  //  hud.fps.text = `FPS ${game.time.fps}`
+    hud.fps.text = `FPS ${game.time.fps}`
 
     sky.tilePosition.x += 0.5
     fog.tilePosition.x += 0.3
+
+    game.physics.arcade.collide(player1, map)
+    game.physics.arcade.collide(player2, map)
+    
+    
  
     //moveAndStop(player1)
     //updateBullets(player1.bullets)
@@ -233,10 +249,10 @@ function hitPlayer(player, bullet) {
     }
 }
 
-// function updateHud() {
-//     hud.text1.text = `PLAYER 1: ${player1.health}`
-//     hud.text2.text = 'PLAYER 2: ' + player2.health
-// }
+function updateHud() {
+    hud.text1.text = `PLAYER 1: ${player1.health}`
+    hud.text2.text = 'PLAYER 2: ' + player2.health
+}
 
 function render() {
    // game.debug.body(player1)
@@ -245,5 +261,5 @@ function render() {
         game.debug.body(obj)
     })
     //game.debug.body(player1)
-    //game.debug.body(player2)
+    // game.debug.body(player2)
 }

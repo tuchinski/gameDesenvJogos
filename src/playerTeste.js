@@ -3,7 +3,7 @@ class PlayerTeste extends Phaser.Sprite {
     constructor(game, x, y, img, tint, bullets, keys){
         super(game,x,y,img)
         this.tint = tint
-        this.health = config.PLAYET_HEALTH
+        this.health = config.PLAYER_HEALTH
         this.anchor.setTo(0.5, 0.5)
         game.physics.arcade.enable(this)
         this.body.gravity.y = config.GRAVITY_VALOR
@@ -32,10 +32,15 @@ class PlayerTeste extends Phaser.Sprite {
             this.body.velocity.x = config.PLAYER_ACCELERATION 
         }
 
-        if(this.cursors.up.isDown && this.body.onFloor() && game.time.now > jumpTimer){
-            this.body.velocity.y = -250
-            jumpTimer = game.time.now + 750
+        if(this.cursors.up.isDown && this.body.touching.down){
+            this.body.velocity.y = -750
+            //jumpTimer = game.time.now + 750
         }
+
+        // if(this.cursors.up.isDown && game.time.now > jumpTimer){
+        //     this.body.velocity.y = -250
+        //     jumpTimer = game.time.now + 750
+        // }
     }
 
     update(){
