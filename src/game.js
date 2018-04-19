@@ -17,16 +17,16 @@ config.RES_Y = 720
 
 config.GRAVITY_VALOR = 2050
 
-config.PLAYER_ACCELERATION  = 400
-config.PLAYER_TURN_VELOCITY = 350
+config.PLAYER_ACCELERATION  = 350
+// config.PLAYER_TURN_VELOCITY = 350
 config.PLAYER_MAX_VELOCITY  = 300
 config.PLAYER_HEALTH        = 30
 config.PLAYER_DRAG          = 300
 
 config.BULLET_FIRE_RATE     = 20
-config.BULLET_ANGLE_ERROR   = 0.1
+config.BULLET_ANGLE_ERROR   = 0.05
 config.BULLET_LIFE_SPAN     = 750
-config.BULLET_VELOCITY      = 500
+config.BULLET_VELOCITY      = 700
 
 var sky
 var fog
@@ -92,7 +92,7 @@ function create() {
             right: Phaser.Keyboard.D,
             up: Phaser.Keyboard.W,
             down: Phaser.Keyboard.S,
-            fire: Phaser.Keyboard.L
+            fire: Phaser.Keyboard.G
             })
     game.add.existing(player1)
 
@@ -201,11 +201,11 @@ function createHealthText(x, y, text) {
     return text
 }
 
-// function updateBullets(bullets) {
-//     bullets.forEach(function(bullet) {
-//         game.world.wrap(bullet, 0, true)
-//     })
-// }
+function updateBullets(bullets) {
+    bullets.forEach(function(bullet) {
+        game.world.wrap(bullet, 0, true)
+    })
+}
 
 function update() {
     hud.fps.text = `FPS ${game.time.fps}`
@@ -219,21 +219,21 @@ function update() {
     
  
     //moveAndStop(player1)
-    //updateBullets(player1.bullets)
-    //updateBullets(player2.bullets)
+    updateBullets(player1.bullets)
+    updateBullets(player2.bullets)
 
-    // game.physics.arcade.collide(player1, player2)
-    // game.physics.arcade.collide(
-    //     player1, player2.bullets, hitPlayer)
-    // game.physics.arcade.collide(
-    //     player2, player1.bullets, hitPlayer)
+    // game.physics.arcade.collide(player1, player2.bullets, hitPlayer)
+    // game.physics.arcade.collide(player2, player1.bullets, hitPlayer)
 
     // game.physics.arcade.collide(player1, map)
     // game.physics.arcade.collide(player2, map)
-    // game.physics.arcade.collide(
-    //     player1.bullets, map, killBullet)
-    // game.physics.arcade.collide(
-    //     player2.bullets, map, killBullet)
+    game.physics.arcade.collide(player1, player2)   
+    game.physics.arcade.collide(player1, player2.bullets)
+    game.physics.arcade.collide(player2, player1.bullets)
+    
+    
+    game.physics.arcade.collide(player1.bullets, map, killBullet)
+    game.physics.arcade.collide(player2.bullets, map, killBullet)
 }
 
 function killBullet(bullet, wall) {
@@ -241,13 +241,13 @@ function killBullet(bullet, wall) {
     bullet.kill()
 }
 
-function hitPlayer(player, bullet) {
-    if (player.alive) {
-        player.damage(1)
-        bullet.kill()
-        updateHud()
-    }
-}
+// function hitPlayer(player, bullet) {
+//     if (player.alive) {
+//         player.damage(1)
+//         bullet.kill()
+//         updateHud()
+//     }
+// }
 
 function updateHud() {
     hud.text1.text = `PLAYER 1: ${player1.health}`

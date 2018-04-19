@@ -9,9 +9,9 @@ class PlayerTeste extends Phaser.Sprite {
         this.body.gravity.y = config.GRAVITY_VALOR
         this.body.bounce.y = 0.1
         //colide com as bordas da tela
-        this.body.collideWorldBounds = true
-
-
+        //this.body.collideWorldBounds = true
+        this.nextFire = 0
+        var flagSide = 0 // 0 == Direita , 1 == Esquerda
 
         this.cursors = {
             left: game.input.keyboard.addKey(keys.left),
@@ -20,6 +20,8 @@ class PlayerTeste extends Phaser.Sprite {
             down: game.input.keyboard.addKey(keys.down),        
             fire: game.input.keyboard.addKey(keys.fire)
         }
+
+        this.bullets = bullets
     }
 
     walk(){
@@ -28,22 +30,48 @@ class PlayerTeste extends Phaser.Sprite {
 
         if(this.cursors.left.isDown){
             this.body.velocity.x = -config.PLAYER_ACCELERATION
+            this.flagSide = 1
         }else if(this.cursors.right.isDown){
-            this.body.velocity.x = config.PLAYER_ACCELERATION 
+            this.body.velocity.x = config.PLAYER_ACCELERATION
+            this.flagSide = 0 
         }
 
         if(this.cursors.up.isDown && this.body.touching.down){
             this.body.velocity.y = -750
-            //jumpTimer = game.time.now + 750
         }
-
-        // if(this.cursors.up.isDown && game.time.now > jumpTimer){
-        //     this.body.velocity.y = -250
-        //     jumpTimer = game.time.now + 750
-        // }
+        game.debug.text("teste")
     }
+
+    fireBullet() {
+        if (!this.alive)
+            return;
+    
+        if (this.cursors.fire.isDown) {
+            if (this.game.time.time > this.nextFire) {
+                var bullet = this.bullets.getFirstExists(false)
+                if (bullet) {
+                    bullet.reset(this.x, this.y)
+                    bullet.lifespan = config.BULLET_LIFE_SPAN
+                    if(this.flagSide){
+                        bullet.rotation = 3.14
+                    }else{
+                        bullet.rotation = 0
+                    }                    
+                    //bullet.body.bounce.setTo(1,1)
+                    bullet.body.friction.setTo(0,0)
+                    game.physics.arcade.velocityFromRotation(
+                        bullet.rotation + game.rnd.realInRange(-config.BULLET_ANGLE_ERROR, config.BULLET_ANGLE_ERROR), 
+                        config.BULLET_VELOCITY, bullet.body.velocity
+                    )
+                    // fire rate
+                    this.nextFire = this.game.time.time + config.BULLET_FIRE_RATE
+                }
+            }
+        }    
+    } 
 
     update(){
         this.walk()
+        this.fireBullet()
     }
 }
