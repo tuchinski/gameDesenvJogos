@@ -37,7 +37,7 @@ class PlayerTeste extends Phaser.Sprite {
         }
 
         if(this.cursors.up.isDown && this.body.touching.down){
-            this.body.velocity.y = -750
+            this.body.velocity.y = -config.PLAYER_JUMP
         }
         game.debug.text("teste")
     }

@@ -15,13 +15,14 @@ const config = {}
 config.RES_X = 1280 // resolucao HD
 config.RES_Y = 720
 
-config.GRAVITY_VALOR = 2050
+config.GRAVITY_VALOR = 2000
 
-config.PLAYER_ACCELERATION  = 350
+config.PLAYER_ACCELERATION  = 300
 // config.PLAYER_TURN_VELOCITY = 350
 config.PLAYER_MAX_VELOCITY  = 300
 config.PLAYER_HEALTH        = 30
 config.PLAYER_DRAG          = 300
+config.PLAYER_JUMP          = 750
 
 config.BULLET_FIRE_RATE     = 20
 config.BULLET_ANGLE_ERROR   = 0.05
@@ -30,6 +31,8 @@ config.BULLET_VELOCITY      = 700
 
 var sky
 var fog
+var medkit
+var medkit2
 var player1
 var player2
 var hud
@@ -54,6 +57,7 @@ function preload() {
     game.load.image('fog', 'assets/fog.png')
     game.load.text('map1', 'assets/map1.txt')  // arquivo txt do mapa
     game.load.image('playerImg', 'assets/wabbit.png')
+    game.load.image('medkit', 'assets/medkit.png')
 }
 
 function createBullets() {
@@ -106,31 +110,20 @@ function create() {
             })
     game.add.existing(player2)
 
-
-    /** 
-     * cria os aviões
-
-    player1 = new Player(game, game.width*2/9, game.height/2, 
-                        'plane1', 0xff0000, createBullets(), {   
-            left: Phaser.Keyboard.LEFT,
-            right: Phaser.Keyboard.RIGHT,
-            up: Phaser.Keyboard.UP,
-            down: Phaser.Keyboard.DOWN,
-            fire: Phaser.Keyboard.L
-        })
-    player2 = new Player(game, game.width*7/9, game.height/2, 
-                        'plane1', 0x00ff00, createBullets(), {   
-            left: Phaser.Keyboard.A,
-            right: Phaser.Keyboard.D,
-            up: Phaser.Keyboard.W,
-            down: Phaser.Keyboard.S,
-            fire: Phaser.Keyboard.G
-        })
-    game.add.existing(player1)
-    game.add.existing(player2)
-    player2.angle = 180
-    */
-
+    medkit = game.add.sprite(0,0, 'medkit')
+    medkit.x = 32+20
+    medkit.y = 160-20
+    medkit.anchor.setTo(0.5,0.5)
+    medkit.scale.setTo(0.05,0.05)
+    
+    medkit2 = game.add.sprite(0,0, 'medkit')
+    medkit2.x = 1280-52
+    medkit2.y = 160-20
+    medkit2.anchor.setTo(0.5,0.5)
+    medkit2.scale.setTo(0.05,0.05)
+    
+    game.physics.arcade.enable(medkit)
+    game.physics.arcade.enable(medkit)
     
     hud = {
         text1: createHealthText(game.width*1/9, 50, 'PLAYER 1: 20'),
@@ -228,8 +221,8 @@ function update() {
     // game.physics.arcade.collide(player1, map)
     // game.physics.arcade.collide(player2, map)
     game.physics.arcade.collide(player1, player2)   
-    game.physics.arcade.collide(player1, player2.bullets)
-    game.physics.arcade.collide(player2, player1.bullets)
+    // game.physics.arcade.collide(player1, player2.bullets)
+    // game.physics.arcade.collide(player2, player1.bullets)
     
     
     game.physics.arcade.collide(player1.bullets, map, killBullet)
