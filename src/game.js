@@ -34,6 +34,8 @@ var sky
 var fog
 var medkit
 var medkit2
+var shield
+var shield2
 var player1
 var player2
 var hud
@@ -59,6 +61,7 @@ function preload() {
     game.load.text('map1', 'assets/map1.txt')  // arquivo txt do mapa
     game.load.image('playerImg', 'assets/wabbit.png')
     game.load.image('medkit', 'assets/medkit.png')
+    game.load.image('shield', 'assets/shield.png')
 }
 
 function createBullets() {
@@ -117,6 +120,7 @@ function create() {
     medkit.anchor.setTo(0.5,0.5)
     medkit.scale.setTo(0.05,0.05)
     game.physics.arcade.enable(medkit)
+    medkit.body.immovable = true
     
     medkit2 = game.add.sprite(0,0, 'medkit')
     medkit2.x = 1280-52
@@ -124,13 +128,20 @@ function create() {
     medkit2.anchor.setTo(0.5,0.5)
     medkit2.scale.setTo(0.05,0.05)
     game.physics.arcade.enable(medkit2)
-    
-    medkit.body.immovable = true
     medkit2.body.immovable = true
+
+    shield = game.add.sprite(0,0, 'shield')
+    shield.scale.setTo(0.15,0.15)
+    shield.x = 32 
+    shield.y = 224
+    game.physics.arcade.enable(shield)
+    
     
     hud = {
         text1: createHealthText(game.width*1/9, 50, 'PLAYER 1: 20'),
         text2: createHealthText(game.width*8/9, 50, 'PLAYER 2: 20'),
+        text3: createHealthText(game.width*1/9, 75, 'SHIELD: 0'),
+        text4: createHealthText(game.width*8/9, 75, 'SHIELD: 0'),
         fps: createHealthText((game.width/2), 50, 'FPS'),
     }
     updateHud()
@@ -249,7 +260,7 @@ function addHealth(player, medkit){
     player.heal(10)
 
     var timer = game.time.create(true)
-    timer.add(1000, reviveMedkit, this, medkit)
+    timer.add(2*(Phaser.Timer.SECOND), reviveMedkit, this, medkit)
     medkit.kill()
     
     timer.start()
@@ -272,6 +283,8 @@ function reviveMedkit(m){
 function updateHud() {
     hud.text1.text = `PLAYER 1: ${player1.health}`
     hud.text2.text = 'PLAYER 2: ' + player2.health
+    hud.text3.text = 'SHIELD: ' + player1.getShield()
+    hud.text4.text = 'SHIELD: ' + player2.shield
 }
 
 function render() {
@@ -280,7 +293,9 @@ function render() {
     obstacles.forEach( function(obj) {
         game.debug.body(obj)
     })
-    game.debug.body(medkit)
-    game.debug.body(medkit2)
+    // game.debug.body(medkit)
+    // game.debug.body(medkit2)
+    game.debug.body(shield)
+    // game.debug.body(shield2)
     // game.debug.body(player2)
 }
