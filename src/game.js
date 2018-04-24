@@ -21,6 +21,7 @@ config.PLAYER_ACCELERATION  = 300
 // config.PLAYER_TURN_VELOCITY = 350
 config.PLAYER_MAX_VELOCITY  = 300
 config.PLAYER_HEALTH        = 30
+config.PLAYER_MAX_HEALTH    = 50
 config.PLAYER_DRAG          = 300
 config.PLAYER_JUMP          = 750
 
@@ -115,15 +116,17 @@ function create() {
     medkit.y = 160-20
     medkit.anchor.setTo(0.5,0.5)
     medkit.scale.setTo(0.05,0.05)
+    game.physics.arcade.enable(medkit)
     
     medkit2 = game.add.sprite(0,0, 'medkit')
     medkit2.x = 1280-52
     medkit2.y = 160-20
     medkit2.anchor.setTo(0.5,0.5)
     medkit2.scale.setTo(0.05,0.05)
+    game.physics.arcade.enable(medkit2)
     
-    game.physics.arcade.enable(medkit)
-    game.physics.arcade.enable(medkit)
+    medkit.body.immovable = true
+    medkit2.body.immovable = true
     
     hud = {
         text1: createHealthText(game.width*1/9, 50, 'PLAYER 1: 20'),
@@ -140,7 +143,8 @@ function create() {
     fullScreenButton.onDown.add(toggleFullScreen)
 
     game.time.advancedTiming = true;
-}
+
+   }
 
 function loadFile() {
     var text = game.cache.getText('map1');
@@ -201,13 +205,18 @@ function updateBullets(bullets) {
 }
 
 function update() {
+    
+    
+    updateHud()
     hud.fps.text = `FPS ${game.time.fps}`
-
+    
     sky.tilePosition.x += 0.5
     fog.tilePosition.x += 0.3
-
+    
     game.physics.arcade.collide(player1, map)
     game.physics.arcade.collide(player2, map)
+    game.physics.arcade.collide(medkit, map)   
+    game.physics.arcade.collide(medkit2, map)   
     
     
  
@@ -215,14 +224,16 @@ function update() {
     updateBullets(player1.bullets)
     updateBullets(player2.bullets)
 
-    // game.physics.arcade.collide(player1, player2.bullets, hitPlayer)
-    // game.physics.arcade.collide(player2, player1.bullets, hitPlayer)
-
-    // game.physics.arcade.collide(player1, map)
-    // game.physics.arcade.collide(player2, map)
+   
     game.physics.arcade.collide(player1, player2)   
-    // game.physics.arcade.collide(player1, player2.bullets)
-    // game.physics.arcade.collide(player2, player1.bullets)
+       
+     
+
+    game.physics.arcade.collide(player1, medkit,addHealth)      
+    game.physics.arcade.collide(player1, medkit2,addHealth)      
+    game.physics.arcade.collide(player2, medkit,addHealth)      
+    game.physics.arcade.collide(player2, medkit2,addHealth)      
+  
     
     
     game.physics.arcade.collide(player1.bullets, map, killBullet)
@@ -233,6 +244,22 @@ function killBullet(bullet, wall) {
     //wall.kill()
     bullet.kill()
 }
+
+function addHealth(player, medkit){
+    player.heal(10)
+
+    var timer = game.time.create(true)
+    timer.add(1000, reviveMedkit, this, medkit)
+    medkit.kill()
+    
+    timer.start()
+}
+
+function reviveMedkit(m){
+    m.revive(1)
+    m.immovable = true
+}
+
 
 // function hitPlayer(player, bullet) {
 //     if (player.alive) {
@@ -253,6 +280,7 @@ function render() {
     obstacles.forEach( function(obj) {
         game.debug.body(obj)
     })
-    //game.debug.body(player1)
+    game.debug.body(medkit)
+    game.debug.body(medkit2)
     // game.debug.body(player2)
 }

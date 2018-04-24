@@ -2,16 +2,17 @@
 class PlayerTeste extends Phaser.Sprite {
     constructor(game, x, y, img, tint, bullets, keys){
         super(game,x,y,img)
-        this.tint = tint
-        this.health = config.PLAYER_HEALTH
+        var flagSide = 0 // 0 == Direita , 1 == Esquerda  Guarda o lado do sprite, pra que ele atire para o lado que está apontando
+        this.tint = tint // Define a cor do Player
+        this.health = config.PLAYER_HEALTH //Define o valor inicial do player
+        this.maxHealth = config.PLAYER_MAX_HEALTH  //Define o valor máximo da vida do player
         this.anchor.setTo(0.5, 0.5)
-        game.physics.arcade.enable(this)
+        game.physics.arcade.enable(this) 
         this.body.gravity.y = config.GRAVITY_VALOR
         this.body.bounce.y = 0.1
         //colide com as bordas da tela
         //this.body.collideWorldBounds = true
         this.nextFire = 0
-        var flagSide = 0 // 0 == Direita , 1 == Esquerda
 
         this.cursors = {
             left: game.input.keyboard.addKey(keys.left),

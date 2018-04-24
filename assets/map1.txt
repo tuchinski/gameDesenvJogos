@@ -9,12 +9,12 @@ X                                      X
 XXXXXXXXXX                    XXXXXXXXXX
 X              XXXXXXXX                X
 X                                      X
-XXXXXXXXXXXX                XXXXXXXXXXXX
+XXXXXXXXXXX                 XXXXXXXXXXXX
 X                                      X
 X                                      X
-X           XXXXXX    XXXXXX           X
+X           XXXXXX     XXXXXX          X
 X                                      X
-XXXXXXXXX                      XXXXXXXXX
+XXXXXXXXXX                     XXXXXXXXX
 X              XXXXXXXX                X
 X                                      X
 XXXXXXXXXXXX               XXXXXXXXXXXXX
