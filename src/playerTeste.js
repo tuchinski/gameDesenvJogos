@@ -45,6 +45,7 @@ class PlayerTeste extends Phaser.Sprite {
     }
 
     getShield(){
+        console.log(this.shield)
         return this.shield
     }
 

@@ -41,6 +41,8 @@ var player2
 var hud
 var map
 var obstacles
+var spiderEnemy
+var pacmanEnemy2
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
     'game-container',
@@ -62,6 +64,8 @@ function preload() {
     game.load.image('playerImg', 'assets/wabbit.png')
     game.load.image('medkit', 'assets/medkit.png')
     game.load.image('shield', 'assets/shield.png')
+    game.load.image('spiderEnemy', 'assets/pacman_enemy.png')
+    game.load.image('spiderEnemy', 'assets/spider_enemy.png')
 }
 
 function createBullets() {
@@ -130,11 +134,31 @@ function create() {
     game.physics.arcade.enable(medkit2)
     medkit2.body.immovable = true
 
-    shield = game.add.sprite(0,0, 'shield')
-    shield.scale.setTo(0.15,0.15)
-    shield.x = 32 
-    shield.y = 224
-    game.physics.arcade.enable(shield)
+    spiderEnemy = game.add.sprite(0,0,'spiderEnemy')
+    spiderEnemy.x = 0
+    spiderEnemy.y = 232
+    spiderEnemy.anchor.setTo(0.5,0.5)
+    spiderEnemy.scale.setTo(0.10,0.10)
+    spiderEnemy.health = 100
+    game.physics.arcade.enable(spiderEnemy)
+
+
+    pacmanEnemy2 = game.add.sprite(0,0,'spiderEnemy')
+    pacmanEnemy2.x = 1250
+    pacmanEnemy2.y = 232
+    pacmanEnemy2.anchor.setTo(0.5,0.5)
+    pacmanEnemy2.scale.setTo(0.10,0.10)
+    pacmanEnemy2.health = 100
+    pacmanEnemy2.tint = 0x0000ff
+    game.physics.arcade.enable(pacmanEnemy2)
+    
+
+
+    // shield = game.add.sprite(0,0, 'shield')
+    // shield.scale.setTo(0.15,0.15)
+    // shield.x = 32 
+    // shield.y = 224
+    // game.physics.arcade.enable(shield)
     
     
     hud = {
@@ -216,7 +240,8 @@ function updateBullets(bullets) {
 }
 
 function update() {
-    
+    game.physics.arcade.moveToObject(spiderEnemy,player2,6000,1000)
+    game.physics.arcade.moveToObject(pacmanEnemy2,player2,6000,1000)
     
     updateHud()
     hud.fps.text = `FPS ${game.time.fps}`
@@ -228,32 +253,45 @@ function update() {
     game.physics.arcade.collide(player2, map)
     game.physics.arcade.collide(medkit, map)   
     game.physics.arcade.collide(medkit2, map)   
+    game.physics.arcade.collide(spiderEnemy, map)   
     
     
  
     //moveAndStop(player1)
     updateBullets(player1.bullets)
     updateBullets(player2.bullets)
-
    
     game.physics.arcade.collide(player1, player2)   
        
-     
-
     game.physics.arcade.collide(player1, medkit,addHealth)      
     game.physics.arcade.collide(player1, medkit2,addHealth)      
     game.physics.arcade.collide(player2, medkit,addHealth)      
     game.physics.arcade.collide(player2, medkit2,addHealth)      
   
-    
-    
     game.physics.arcade.collide(player1.bullets, map, killBullet)
     game.physics.arcade.collide(player2.bullets, map, killBullet)
+    
+    
+    game.physics.arcade.collide(spiderEnemy, player1.bullets, hitPacman)
+    game.physics.arcade.collide(spiderEnemy, player2.bullets, hitPacman)
+
+    // game.physics.arcade.collide(player2,player1.bullets, hitPlayer)
+    // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)
+    
+        
 }
 
 function killBullet(bullet, wall) {
     //wall.kill()
     bullet.kill()
+}
+
+function hitPacman(pacmanEnemy, bullet){
+    if(pacmanEnemy.alive){
+        pacmanEnemy.damage(1)
+        bullet.kill()
+        updateHud()
+    }
 }
 
 function addHealth(player, medkit){
@@ -272,19 +310,19 @@ function reviveMedkit(m){
 }
 
 
-// function hitPlayer(player, bullet) {
-//     if (player.alive) {
-//         player.damage(1)
-//         bullet.kill()
-//         updateHud()
-//     }
-// }
+function hitPlayer(player, bullet) {
+    if (player.alive) {
+        player.damage(1)
+        bullet.kill()
+        updateHud()
+    }
+}
 
 function updateHud() {
     hud.text1.text = `PLAYER 1: ${player1.health}`
     hud.text2.text = 'PLAYER 2: ' + player2.health
-    hud.text3.text = 'SHIELD: ' + player1.getShield()
-    hud.text4.text = 'SHIELD: ' + player2.shield
+    hud.text3.text = 'SHIELD: ' + spiderEnemy.health
+    //hud.text4.text = 'SHIELD: ' + player2.shield
 }
 
 function render() {
@@ -293,9 +331,10 @@ function render() {
     obstacles.forEach( function(obj) {
         game.debug.body(obj)
     })
-    // game.debug.body(medkit)
+    //  game.debug.body(pacmanEnemy)
     // game.debug.body(medkit2)
-    game.debug.body(shield)
+    //game.debug.body(shield)
     // game.debug.body(shield2)
     // game.debug.body(player2)
+    
 }
