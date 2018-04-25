@@ -30,6 +30,9 @@ config.BULLET_ANGLE_ERROR   = 0.05
 config.BULLET_LIFE_SPAN     = 750
 config.BULLET_VELOCITY      = 700
 
+config.SPIDER_HEALTH        = 5
+config.PACMAN_HEALTH        = 10
+
 var sky
 var fog
 var medkit
@@ -42,7 +45,10 @@ var hud
 var map
 var obstacles
 var spiderEnemy
-var pacmanEnemy2
+var pacmanEnemy
+var numberEnemies = 2
+var canSpawnEnemy = true
+var enemy_wave
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
     'game-container',
@@ -64,7 +70,7 @@ function preload() {
     game.load.image('playerImg', 'assets/wabbit.png')
     game.load.image('medkit', 'assets/medkit.png')
     game.load.image('shield', 'assets/shield.png')
-    game.load.image('spiderEnemy', 'assets/pacman_enemy.png')
+    game.load.image('pacmanEnemy', 'assets/pacman_enemy.png')
     game.load.image('spiderEnemy', 'assets/spider_enemy.png')
 }
 
@@ -134,23 +140,23 @@ function create() {
     game.physics.arcade.enable(medkit2)
     medkit2.body.immovable = true
 
-    spiderEnemy = game.add.sprite(0,0,'spiderEnemy')
-    spiderEnemy.x = 0
-    spiderEnemy.y = 232
-    spiderEnemy.anchor.setTo(0.5,0.5)
-    spiderEnemy.scale.setTo(0.10,0.10)
-    spiderEnemy.health = 100
-    game.physics.arcade.enable(spiderEnemy)
+    // spiderEnemy = game.add.sprite(0,0,'spiderEnemy')
+    // spiderEnemy.x = 0
+    // spiderEnemy.y = 232
+    // spiderEnemy.anchor.setTo(0.5,0.5)
+    // spiderEnemy.scale.setTo(0.10,0.10)
+    // spiderEnemy.health = 20
+    // game.physics.arcade.enable(spiderEnemy)
 
 
-    pacmanEnemy2 = game.add.sprite(0,0,'spiderEnemy')
-    pacmanEnemy2.x = 1250
-    pacmanEnemy2.y = 232
-    pacmanEnemy2.anchor.setTo(0.5,0.5)
-    pacmanEnemy2.scale.setTo(0.10,0.10)
-    pacmanEnemy2.health = 100
-    pacmanEnemy2.tint = 0x0000ff
-    game.physics.arcade.enable(pacmanEnemy2)
+    // pacmanEnemy = game.add.sprite(0,0,'pacmanEnemy')
+    // pacmanEnemy.x = 1250
+    // pacmanEnemy.y = 232
+    // pacmanEnemy.anchor.setTo(0.5,0.5)
+    // pacmanEnemy.scale.setTo(0.10,0.10)
+    // pacmanEnemy.health = 30
+    // pacmanEnemy.tint = 0x0000ff
+    // game.physics.arcade.enable(pacmanEnemy)
     
 
 
@@ -178,6 +184,8 @@ function create() {
     fullScreenButton.onDown.add(toggleFullScreen)
 
     game.time.advancedTiming = true;
+
+    enemy_wave = game.add.group()
 
    }
 
@@ -239,9 +247,48 @@ function updateBullets(bullets) {
     })
 }
 
+function spawnEnemies(){
+    //canSpawnEnemy = false
+    //enemy_wave = game.add.group();
+    var i = 0
+    for(i=0; i<numberEnemies; i++){
+        var enemy
+        enemy = enemy_wave.create(0,232,'spiderEnemy')
+        create_enemy_body(enemy)
+        enemy.name = 'enemySpider'
+        enemy.scale.setTo(0.10,0.10)
+        enemy.health = config.SPIDER_HEALTH        
+    }
+
+    for(i=0; i<(numberEnemies/2); i++){
+        var enemy
+        enemy = enemy_wave.create(1250,232,'pacmanEnemy')
+        create_enemy_body(enemy)
+        enemy.name = 'pacmanEnemy'
+        enemy.scale.setTo(0.10, 0.10)
+        enemy.health = config.SPIDER_HEALTH
+    }
+
+    numberEnemies = numberEnemies * 2
+}
+
+function followPlayer1(){
+   
+}
+
+
 function update() {
-    game.physics.arcade.moveToObject(spiderEnemy,player2,6000,1000)
-    game.physics.arcade.moveToObject(pacmanEnemy2,player2,6000,1000)
+    
+    if(enemy_wave.countLiving() == 0){
+        spawnEnemies()
+    }
+    followPlayer1()
+
+
+
+
+    // game.physics.arcade.moveToObject(spiderEnemy,player2,6000,1500)
+    // game.physics.arcade.moveToObject(pacmanEnemy,player2,6000,1000)
     
     updateHud()
     hud.fps.text = `FPS ${game.time.fps}`
@@ -272,13 +319,21 @@ function update() {
     game.physics.arcade.collide(player2.bullets, map, killBullet)
     
     
-    game.physics.arcade.collide(spiderEnemy, player1.bullets, hitPacman)
     game.physics.arcade.collide(spiderEnemy, player2.bullets, hitPacman)
+    game.physics.arcade.collide(pacmanEnemy, player2.bullets, hitPacman)
 
     // game.physics.arcade.collide(player2,player1.bullets, hitPlayer)
     // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)
     
         
+}
+
+
+function create_enemy_body(enemy){
+    enemy.anchor.setTo(0.5, 0.5);
+    game.physics.enable(enemy, Phaser.Physics.ARCADE);
+    enemy.body.collideWorldBounds = false;
+    return enemy
 }
 
 function killBullet(bullet, wall) {
@@ -321,7 +376,7 @@ function hitPlayer(player, bullet) {
 function updateHud() {
     hud.text1.text = `PLAYER 1: ${player1.health}`
     hud.text2.text = 'PLAYER 2: ' + player2.health
-    hud.text3.text = 'SHIELD: ' + spiderEnemy.health
+    //hud.text3.text = 'SHIELD: ' + spiderEnemy.health
     //hud.text4.text = 'SHIELD: ' + player2.shield
 }
 
@@ -331,6 +386,7 @@ function render() {
     obstacles.forEach( function(obj) {
         game.debug.body(obj)
     })
+    console.log(enemy_wave)
     //  game.debug.body(pacmanEnemy)
     // game.debug.body(medkit2)
     //game.debug.body(shield)
