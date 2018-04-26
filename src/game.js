@@ -120,16 +120,18 @@ function create() {
             fire: Phaser.Keyboard.G
             })
     game.add.existing(player1)
-
+    player1.shield = 0
+    
     player2 = new PlayerTeste(game, game.width - 50, game.height - 34,
-                                'playerImg', 0x00ff00, createBullets(), {   
+        'playerImg', 0x00ff00, createBullets(), {   
             left: Phaser.Keyboard.LEFT,
             right: Phaser.Keyboard.RIGHT,
             up: Phaser.Keyboard.UP,
             down: Phaser.Keyboard.DOWN,
             fire: Phaser.Keyboard.L
-            })
-    game.add.existing(player2)
+        })
+        game.add.existing(player2)
+        player2.shield = 0
 
     medkit = game.add.sprite(0,0, 'medkit')
     medkit.x = 32+20
@@ -165,11 +167,17 @@ function create() {
     // pacmanEnemy.tint = 0x0000ff
     // game.physics.arcade.enable(pacmanEnemy)
 
-    // shield = game.add.sprite(0,0, 'shield')
-    // shield.scale.setTo(0.15,0.15)
-    // shield.x = 32 
-    // shield.y = 224
-    // game.physics.arcade.enable(shield)
+    shield = game.add.sprite(0,0, 'shield')
+    shield.scale.setTo(0.15,0.15)
+    shield.x = 32 
+    shield.y = 224
+    game.physics.arcade.enable(shield)
+
+    shield2 = game.add.sprite(0,0, 'shield')
+    shield2.scale.setTo(0.15,0.15)
+    shield2.x = 1220
+    shield2.y = 224
+    game.physics.arcade.enable(shield2)
     
     
     hud = {
@@ -334,7 +342,9 @@ function followPlayer(enemy){
 
 
 function hitPlayer(player,enemy) {
-    player.damage(5)    
+    if(!player.shield){
+        //player.damage(5)
+    }    
 }
 
 function hitEnemy(bullet,enemy) {
@@ -370,6 +380,8 @@ function showTimeToWave(){
     }
 }
 
+
+
 function update() {
     //verifyGameState()
     showTimeToWave()
@@ -380,7 +392,6 @@ function update() {
         //spawnEnemies()
         waveNumber = waveNumber+1 
         timerEnemy.start()
-        console.log(timerEnemy)
     }else if((enemy_wave.countLiving() == 0 && timerEnemy.expired)){
         canSpawnEnemy = true
     }
@@ -405,6 +416,8 @@ function update() {
     game.physics.arcade.collide(player2, map)
     game.physics.arcade.collide(medkit, map)   
     game.physics.arcade.collide(medkit2, map)   
+    game.physics.arcade.collide(shield, map)   
+    game.physics.arcade.collide(shield2, map)   
     // game.physics.arcade.collide(spiderEnemy, map)   
     
     
@@ -415,10 +428,15 @@ function update() {
     
     game.physics.arcade.collide(player1, player2)      
     
-    game.physics.arcade.collide(player1, medkit,addHealth)      
+    game.physics.arcade.collide(player1, medkit, addHealth)      
     game.physics.arcade.collide(player1, medkit2,addHealth)      
-    game.physics.arcade.collide(player2, medkit,addHealth)      
-    game.physics.arcade.collide(player2, medkit2,addHealth)      
+    game.physics.arcade.collide(player2, medkit, addHealth)      
+    game.physics.arcade.collide(player2, medkit2,addHealth)
+
+    game.physics.arcade.collide(player1, shield, enableShield)      
+    game.physics.arcade.collide(player1, shield2, enableShield)      
+    game.physics.arcade.collide(player2, shield, enableShield)      
+    game.physics.arcade.collide(player2, shield2, enableShield)      
   
     game.physics.arcade.collide(player1.bullets, map, killBullet)
     game.physics.arcade.collide(player2.bullets, map, killBullet)
@@ -471,6 +489,21 @@ function hitPacman(pacmanEnemy, bullet){
     }
 }
 
+function disableShield(player){
+    player.shield = 0
+}
+
+function enableShield(player, shield){
+    shield.kill()
+    player.shield = 1
+    var timerShield = game.time.create(true)
+    var timerToReviveShield = game.time.create(true)
+    timerShield.add(5*(Phaser.Timer.SECOND),disableShield, this, player)
+    timerToReviveShield.add(2*(Phaser.Timer.SECOND),reviveMedkit, this, shield)
+    timerShield.start()
+    timerToReviveShield.start()
+}
+
 function addHealth(player, medkit){
     player.heal(10)
 
@@ -502,9 +535,10 @@ function render() {
     
     //  game.debug.body(pacmanEnemy)
     // game.debug.body(medkit2)
-    //game.debug.body(shield)
+    game.debug.body(shield)
+    game.debug.body(shield2)
     // game.debug.body(shield2)
-    game.debug.body(enemy_wave.getAt(0))
+    // game.debug.body(enemy_wave.getAt(0))
     
 }
 

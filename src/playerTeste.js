@@ -3,7 +3,7 @@ class PlayerTeste extends Phaser.Sprite {
     constructor(game, x, y, img, tint, bullets, keys){
         super(game,x,y,img)
         var flagSide = 0 // 0 == Direita , 1 == Esquerda  Guarda o lado do sprite, pra que ele atire para o lado que está apontando
-        var shield = 0
+        var shield
         this.tint = tint // Define a cor do Player
         this.health = config.PLAYER_HEALTH //Define o valor inicial do player
         this.maxHealth = config.PLAYER_MAX_HEALTH  //Define o valor máximo da vida do player
@@ -37,24 +37,12 @@ class PlayerTeste extends Phaser.Sprite {
             this.body.velocity.x = config.PLAYER_ACCELERATION
             this.flagSide = 0 
         }
+        
 
         if(this.cursors.up.isDown && this.body.touching.down){
             this.body.velocity.y = -config.PLAYER_JUMP
         }
-        game.debug.text("teste")
-    }
-
-    getShield(){
-        console.log(this.shield)
-        return this.shield
-    }
-
-    setShield(valor){
-        this.shield = valor
-    }
-
-    addShield(valor){
-        this.shield += valor
+        
     }
 
     fireBullet() {
