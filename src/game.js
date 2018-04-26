@@ -49,6 +49,7 @@ var pacmanEnemy
 var numberEnemies = 2
 var canSpawnEnemy = true
 var enemy_wave
+var enemiesAlive = 0
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
     'game-container',
@@ -174,7 +175,7 @@ function create() {
         text4: createHealthText(game.width*8/9, 75, 'SHIELD: 0'),
         fps: createHealthText((game.width/2), 50, 'FPS'),
     }
-    updateHud()
+    
     
 
     //var fps = new FramesPerSecond(game, game.width*3/9, 50)
@@ -186,6 +187,7 @@ function create() {
     game.time.advancedTiming = true;
 
     enemy_wave = game.add.group()
+    updateHud()
 
    }
 
@@ -268,27 +270,54 @@ function spawnEnemies(){
         enemy.scale.setTo(0.10, 0.10)
         enemy.health = config.SPIDER_HEALTH
     }
-
+    enemiesAlive = numberEnemies + (numberEnemies/2)
     numberEnemies = numberEnemies * 2
 }
 
-function followPlayer1(){
-   
+function followPlayer(enemy){
+    if(enemy.name == 'enemySpider'){
+        game.physics.arcade.moveToObject(enemy,player2,6000,1500)
+    }else{
+        game.physics.arcade.moveToObject(enemy,player1,6000,1000)      
+    }
 }
 
+
+
+function hitPlayer(player,enemy) {
+    player.damage(5)
+    
+}
+
+function hitEnemy(bullet,enemy) {
+    bullet.kill()
+    enemy.damage(5)
+    enemy.events.onKilled.add(function(){
+        enemy.destroy()
+    })
+}
+
+//da pra usar essa funcao se precisar que apenas um inimigo colida com o chão
+// function checkCollisionMapEnemies(enemy,map){
+//     if(enemy.name == 'spiderEnemy'){
+//         game.physics.arcade.collide(enemy,map)
+//     }
+// }
 
 function update() {
     
     if(enemy_wave.countLiving() == 0){
         spawnEnemies()
     }
-    followPlayer1()
-
-
-
+    
+    enemy_wave.forEachAlive(followPlayer)
 
     // game.physics.arcade.moveToObject(spiderEnemy,player2,6000,1500)
     // game.physics.arcade.moveToObject(pacmanEnemy,player2,6000,1000)
+    // game.physics.arcade.moveToObject(enemy_wave.getAt(0),player2,6000,1000)
+    // game.physics.arcade.moveToObject(enemy_wave.getAt(1),player2,6000,1000)
+    // game.physics.arcade.moveToObject(enemy_wave.getAt(2),player2,6000,1000)
+    
     
     updateHud()
     hud.fps.text = `FPS ${game.time.fps}`
@@ -300,7 +329,7 @@ function update() {
     game.physics.arcade.collide(player2, map)
     game.physics.arcade.collide(medkit, map)   
     game.physics.arcade.collide(medkit2, map)   
-    game.physics.arcade.collide(spiderEnemy, map)   
+    // game.physics.arcade.collide(spiderEnemy, map)   
     
     
  
@@ -317,10 +346,23 @@ function update() {
   
     game.physics.arcade.collide(player1.bullets, map, killBullet)
     game.physics.arcade.collide(player2.bullets, map, killBullet)
+
+    game.physics.arcade.collide(player1,enemy_wave,hitPlayer)
+    game.physics.arcade.collide(player2,enemy_wave,hitPlayer)
+
+    game.physics.arcade.collide(player1.bullets,enemy_wave,hitEnemy)
+    game.physics.arcade.collide(player2.bullets,enemy_wave,hitEnemy)
     
     
-    game.physics.arcade.collide(spiderEnemy, player2.bullets, hitPacman)
-    game.physics.arcade.collide(pacmanEnemy, player2.bullets, hitPacman)
+    
+    
+
+    // game.physics.arcade.collide(enemy_wave, map, checkCollisionMapEnemies)
+    
+    
+    
+   
+    
 
     // game.physics.arcade.collide(player2,player1.bullets, hitPlayer)
     // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)
@@ -364,19 +406,10 @@ function reviveMedkit(m){
     m.immovable = true
 }
 
-
-function hitPlayer(player, bullet) {
-    if (player.alive) {
-        player.damage(1)
-        bullet.kill()
-        updateHud()
-    }
-}
-
 function updateHud() {
     hud.text1.text = `PLAYER 1: ${player1.health}`
     hud.text2.text = 'PLAYER 2: ' + player2.health
-    //hud.text3.text = 'SHIELD: ' + spiderEnemy.health
+    hud.text3.text = 'SHIELD: ' + enemy_wave.countLiving()
     //hud.text4.text = 'SHIELD: ' + player2.shield
 }
 
@@ -386,11 +419,12 @@ function render() {
     obstacles.forEach( function(obj) {
         game.debug.body(obj)
     })
-    console.log(enemy_wave)
+    
     //  game.debug.body(pacmanEnemy)
     // game.debug.body(medkit2)
     //game.debug.body(shield)
     // game.debug.body(shield2)
-    // game.debug.body(player2)
+    game.debug.body(enemy_wave.getAt(0))
     
 }
+
