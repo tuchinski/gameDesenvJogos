@@ -50,7 +50,7 @@ var numberEnemies = 2
 var canSpawnEnemy = true
 var enemy_wave
 var enemiesAlive = 0
-var waveNumber = 1
+var waveNumber = 0
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
     'game-container',
@@ -271,7 +271,9 @@ function spawnEnemies(){
 
     for(i=0; i<(numberEnemies/2); i++){
         var enemy
-        enemy = enemy_wave.create(1250,232,'pacmanEnemy')
+        posX = game.rnd.integerInRange(1250,1300)
+        posY = game.rnd.integerInRange(0,300)
+        enemy = enemy_wave.create(posX,posY,'pacmanEnemy')
         create_enemy_body(enemy)
         enemy.name = 'pacmanEnemy'
         enemy.scale.setTo(0.10, 0.10)
@@ -320,6 +322,7 @@ function checkWave(){
 function update() {
     if(enemy_wave.countLiving() == 0){
         spawnEnemies()
+        waveNumber = waveNumber+1 
     }
     
     
@@ -365,7 +368,7 @@ function update() {
 
     game.physics.arcade.collide(player1.bullets,enemy_wave,hitEnemy)
     game.physics.arcade.collide(player2.bullets,enemy_wave,hitEnemy)
-    checkWave() 
+    // checkWave() 
     
     
     
