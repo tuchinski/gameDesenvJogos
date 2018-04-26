@@ -50,6 +50,7 @@ var numberEnemies = 2
 var canSpawnEnemy = true
 var enemy_wave
 var enemiesAlive = 0
+var waveNumber = 1
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
     'game-container',
@@ -173,7 +174,7 @@ function create() {
         text2: createHealthText(game.width*8/9, 50, 'PLAYER 2: 20'),
         text3: createHealthText(game.width*1/9, 75, 'SHIELD: 0'),
         text4: createHealthText(game.width*8/9, 75, 'SHIELD: 0'),
-        fps: createHealthText((game.width/2), 50, 'FPS'),
+        wave: createHealthText((game.width/2), 50, 'Wave 1'),
     }
     
     
@@ -253,9 +254,15 @@ function spawnEnemies(){
     //canSpawnEnemy = false
     //enemy_wave = game.add.group();
     var i = 0
+    var posX
+    var posY
+
     for(i=0; i<numberEnemies; i++){
         var enemy
-        enemy = enemy_wave.create(0,232,'spiderEnemy')
+        posX = game.rnd.integerInRange(-200,0)
+        posY = game.rnd.integerInRange(0,232)
+        console.log(posY)
+        enemy = enemy_wave.create(0,posY,'spiderEnemy')
         create_enemy_body(enemy)
         enemy.name = 'enemySpider'
         enemy.scale.setTo(0.10,0.10)
@@ -297,18 +304,24 @@ function hitEnemy(bullet,enemy) {
     })
 }
 
-//da pra usar essa funcao se precisar que apenas um inimigo colida com o chão
+// da pra usar essa funcao se precisar que apenas um inimigo colida com o chão
 // function checkCollisionMapEnemies(enemy,map){
-//     if(enemy.name == 'spiderEnemy'){
+//     if(enemy.name === 'spiderEnemy'){
 //         game.physics.arcade.collide(enemy,map)
 //     }
 // }
 
+function checkWave(){
+    if(enemy_wave.countLiving() == 0){
+        waveNumber = waveNumber+1 
+    }
+}
+
 function update() {
-    
     if(enemy_wave.countLiving() == 0){
         spawnEnemies()
     }
+    
     
     enemy_wave.forEachAlive(followPlayer)
 
@@ -320,7 +333,7 @@ function update() {
     
     
     updateHud()
-    hud.fps.text = `FPS ${game.time.fps}`
+    hud.wave.text = `Wave ${waveNumber}`
     
     sky.tilePosition.x += 0.5
     fog.tilePosition.x += 0.3
@@ -352,6 +365,7 @@ function update() {
 
     game.physics.arcade.collide(player1.bullets,enemy_wave,hitEnemy)
     game.physics.arcade.collide(player2.bullets,enemy_wave,hitEnemy)
+    checkWave() 
     
     
     
@@ -366,7 +380,6 @@ function update() {
 
     // game.physics.arcade.collide(player2,player1.bullets, hitPlayer)
     // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)
-    
         
 }
 
