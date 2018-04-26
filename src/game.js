@@ -35,22 +35,23 @@ config.PACMAN_HEALTH        = 10
 
 var sky
 var fog
-var medkit
-var medkit2
+var medkit                  //Medkit do lado esquerdo
+var medkit2                 //Medkit do lado direito
 var shield
 var shield2
 var player1
 var player2
-var hud
-var map
+var hud                     //HUD da tela, mostra a vida dos personagens, num da wave, etc
+var map                     //recebe o map.txt
 var obstacles
-var spiderEnemy
-var pacmanEnemy
-var numberEnemies = 2
-var canSpawnEnemy = true
-var enemy_wave
-var enemiesAlive = 0
-var waveNumber = 0
+// var spiderEnemy
+// var pacmanEnemy
+var numberEnemies = 2       //controla quantos inimigos serão gerados
+//var canSpawnEnemy = true    
+var enemy_wave              //grupo que contém os inimigos
+var enemiesAlive = 0        //verifica quantos inimigos estão vivos
+var waveNumber = 0          //controla o número da wave
+var flagFollowPlayer = -1        //flag que define qual player o inimigo tem que seguir
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
     'game-container',
@@ -261,12 +262,13 @@ function spawnEnemies(){
         var enemy
         posX = game.rnd.integerInRange(-200,0)
         posY = game.rnd.integerInRange(0,232)
-        console.log(posY)
         enemy = enemy_wave.create(0,posY,'spiderEnemy')
         create_enemy_body(enemy)
         enemy.name = 'enemySpider'
         enemy.scale.setTo(0.10,0.10)
-        enemy.health = config.SPIDER_HEALTH        
+        enemy.health = config.SPIDER_HEALTH
+        enemy.playerToFollow = flagFollowPlayer
+        flagFollowPlayer = flagFollowPlayer*(-1) 
     }
 
     for(i=0; i<(numberEnemies/2); i++){
@@ -278,16 +280,22 @@ function spawnEnemies(){
         enemy.name = 'pacmanEnemy'
         enemy.scale.setTo(0.10, 0.10)
         enemy.health = config.SPIDER_HEALTH
+        enemy.playerToFollow = flagFollowPlayer
+        flagFollowPlayer = flagFollowPlayer*(-1) 
     }
     enemiesAlive = numberEnemies + (numberEnemies/2)
     numberEnemies = numberEnemies * 2
 }
 
 function followPlayer(enemy){
-    if(enemy.name == 'enemySpider'){
-        game.physics.arcade.moveToObject(enemy,player2,6000,1500)
+    if(!player1.alive){
+        game.physics.arcade.moveToObject(enemy,player2,5000,1000)
+    }else if(!player2.alive){
+        game.physics.arcade.moveToObject(enemy,player1,6000,1000)        
+    }else if(enemy.playerToFollow < 0){
+        game.physics.arcade.moveToObject(enemy,player1,6000,1000)
     }else{
-        game.physics.arcade.moveToObject(enemy,player1,6000,1000)      
+        game.physics.arcade.moveToObject(enemy,player2,6000,1000)
     }
 }
 
@@ -300,7 +308,7 @@ function hitPlayer(player,enemy) {
 
 function hitEnemy(bullet,enemy) {
     bullet.kill()
-    enemy.damage(5)
+    enemy.damage(1)
     enemy.events.onKilled.add(function(){
         enemy.destroy()
     })
