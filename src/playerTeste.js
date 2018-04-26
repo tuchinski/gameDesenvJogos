@@ -12,7 +12,7 @@ class PlayerTeste extends Phaser.Sprite {
         this.body.gravity.y = config.GRAVITY_VALOR
         this.body.bounce.y = 0.1
         //colide com as bordas da tela
-        //this.body.collideWorldBounds = true
+        this.body.collideWorldBounds = true
         this.nextFire = 0
 
         this.cursors = {
