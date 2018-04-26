@@ -1,10 +1,11 @@
 
 class PlayerTeste extends Phaser.Sprite {
-    constructor(game, x, y, img, tint, bullets, keys){
+    constructor(game, x, y, img, tint, bullets, name, keys){
         super(game,x,y,img)
         var flagSide = 0 // 0 == Direita , 1 == Esquerda  Guarda o lado do sprite, pra que ele atire para o lado que está apontando
         var shield
         this.tint = tint // Define a cor do Player
+        this.name = name
         this.health = config.PLAYER_HEALTH //Define o valor inicial do player
         this.maxHealth = config.PLAYER_MAX_HEALTH  //Define o valor máximo da vida do player
         this.anchor.setTo(0.5, 0.5)

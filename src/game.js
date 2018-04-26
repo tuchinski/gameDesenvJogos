@@ -17,21 +17,21 @@ config.RES_Y = 720
 
 config.GRAVITY_VALOR = 2000
 
-config.PLAYER_ACCELERATION  = 300
+config.PLAYER_ACCELERATION = 300
 // config.PLAYER_TURN_VELOCITY = 350
-config.PLAYER_MAX_VELOCITY  = 300
-config.PLAYER_HEALTH        = 30
-config.PLAYER_MAX_HEALTH    = 50
-config.PLAYER_DRAG          = 300
-config.PLAYER_JUMP          = 750
+config.PLAYER_MAX_VELOCITY = 300
+config.PLAYER_HEALTH = 3
+config.PLAYER_MAX_HEALTH = 5
+config.PLAYER_DRAG = 300
+config.PLAYER_JUMP = 750
 
-config.BULLET_FIRE_RATE     = 20
-config.BULLET_ANGLE_ERROR   = 0.05
-config.BULLET_LIFE_SPAN     = 750
-config.BULLET_VELOCITY      = 700
+config.BULLET_FIRE_RATE = 20
+config.BULLET_ANGLE_ERROR = 0.05
+config.BULLET_LIFE_SPAN = 750
+config.BULLET_VELOCITY = 700
 
-config.SPIDER_HEALTH        = 2
-config.PACMAN_HEALTH        = 5
+config.SPIDER_HEALTH = 2
+config.PACMAN_HEALTH = 5
 
 var sky
 var fog
@@ -41,13 +41,19 @@ var shield
 var shield2
 var player1
 var player2
+var player1Name = 'Player1'
+var player2Name = 'Player2'
+var startX_P1 = 50
+var startY_P1
+var startX_P2
+var startY_P2
 var hud                     //HUD da tela, mostra a vida dos personagens, num da wave, etc
 var map                     //recebe o map.txt
 var obstacles
 // var spiderEnemy
 // var pacmanEnemy
 var numberEnemies = 2       //controla quantos inimigos serão gerados
-var canSpawnEnemy = true    
+var canSpawnEnemy = true
 var enemy_wave              //grupo que contém os inimigos
 var enemiesAlive = 0        //verifica quantos inimigos estão vivos
 var waveNumber = 0          //controla o número da wave
@@ -56,9 +62,9 @@ var gameState
 var timerEnemy
 var nextWaveTimer
 
-var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS, 
+var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS,
     'game-container',
-    {   
+    {
         preload: preload,
         create: create,
         update: update,
@@ -98,54 +104,59 @@ function create() {
     var skyHeight = game.cache.getImage('sky').height
     sky = game.add.tileSprite(
         0, 0, skyWidth, skyHeight, 'sky')
-    sky.scale.x = game.width/sky.width
-    sky.scale.y = game.height/sky.height
+    sky.scale.x = game.width / sky.width
+    sky.scale.y = game.height / sky.height
 
     fog = game.add.tileSprite(
         0, 0, game.width, game.height, 'fog')
-    fog.tileScale.setTo(7,7)
+    fog.tileScale.setTo(7, 7)
     fog.alpha = 0.4
 
-   
-    
+
+
     obstacles = game.add.group()
     createMap()
 
-    player1 = new PlayerTeste(game, 50, game.height - 34,
-                                'playerImg', 0xff0000, createBullets(), {   
+    startX_P1 = 50
+    startY_P1 = game.height - 34
+    startX_P2 = game.width - 50
+    startY_P2 = game.height - 34
+
+    player1 = new PlayerTeste(game, startX_P1, startY_P1,
+        'playerImg', 0xff0000, createBullets(), player1Name, {
             left: Phaser.Keyboard.A,
             right: Phaser.Keyboard.D,
             up: Phaser.Keyboard.W,
             down: Phaser.Keyboard.S,
             fire: Phaser.Keyboard.G
-            })
+        })
     game.add.existing(player1)
     player1.shield = 0
-    
-    player2 = new PlayerTeste(game, game.width - 50, game.height - 34,
-        'playerImg', 0x00ff00, createBullets(), {   
+
+    player2 = new PlayerTeste(game, startX_P2, startY_P2,
+        'playerImg', 0x00ff00, createBullets(), player2Name, {
             left: Phaser.Keyboard.LEFT,
             right: Phaser.Keyboard.RIGHT,
             up: Phaser.Keyboard.UP,
             down: Phaser.Keyboard.DOWN,
             fire: Phaser.Keyboard.L
         })
-        game.add.existing(player2)
-        player2.shield = 0
+    game.add.existing(player2)
+    player2.shield = 0
 
-    medkit = game.add.sprite(0,0, 'medkit')
-    medkit.x = 32+20
-    medkit.y = 160-20
-    medkit.anchor.setTo(0.5,0.5)
-    medkit.scale.setTo(0.05,0.05)
+    medkit = game.add.sprite(0, 0, 'medkit')
+    medkit.x = 32 + 20
+    medkit.y = 160 - 20
+    medkit.anchor.setTo(0.5, 0.5)
+    medkit.scale.setTo(0.05, 0.05)
     game.physics.arcade.enable(medkit)
     medkit.body.immovable = true
-    
-    medkit2 = game.add.sprite(0,0, 'medkit')
-    medkit2.x = 1280-52
-    medkit2.y = 160-20
-    medkit2.anchor.setTo(0.5,0.5)
-    medkit2.scale.setTo(0.05,0.05)
+
+    medkit2 = game.add.sprite(0, 0, 'medkit')
+    medkit2.x = 1280 - 52
+    medkit2.y = 160 - 20
+    medkit2.anchor.setTo(0.5, 0.5)
+    medkit2.scale.setTo(0.05, 0.05)
     game.physics.arcade.enable(medkit2)
     medkit2.body.immovable = true
 
@@ -167,30 +178,30 @@ function create() {
     // pacmanEnemy.tint = 0x0000ff
     // game.physics.arcade.enable(pacmanEnemy)
 
-    shield = game.add.sprite(0,0, 'shield')
-    shield.scale.setTo(0.15,0.15)
-    shield.x = 32 
+    shield = game.add.sprite(0, 0, 'shield')
+    shield.scale.setTo(0.15, 0.15)
+    shield.x = 32
     shield.y = 224
     game.physics.arcade.enable(shield)
 
-    shield2 = game.add.sprite(0,0, 'shield')
-    shield2.scale.setTo(0.15,0.15)
+    shield2 = game.add.sprite(0, 0, 'shield')
+    shield2.scale.setTo(0.15, 0.15)
     shield2.x = 1220
     shield2.y = 224
     game.physics.arcade.enable(shield2)
-    
-    
+
+
     hud = {
-        text1: createText(game.width*1/9, 50, 'PLAYER 1: 20'),
-        text2: createText(game.width*8/9, 50, 'PLAYER 2: 20'),
-        text3: createText(game.width*1/9, 75, 'SHIELD: 0'),
-        text4: createText(game.width*8/9, 75, 'SHIELD: 0'),
-        wave: createWaveText((game.width/2), 50, 'Wave 1'),
-        nextWaveTimer: createTimerText(game.width/2,game.height/2, '3')
+        text1: createText(game.width * 1 / 9, 50, 'PLAYER 1: 20'),
+        text2: createText(game.width * 8 / 9, 50, 'PLAYER 2: 20'),
+        text3: createText(game.width * 1 / 9, 75, 'SHIELD: 0'),
+        text4: createText(game.width * 8 / 9, 75, 'SHIELD: 0'),
+        wave: createWaveText((game.width / 2), 50, 'Wave 1'),
+        nextWaveTimer: createTimerText(game.width / 2, game.height / 2, '3')
     }
-    
-    
-    
+
+
+
 
     //var fps = new FramesPerSecond(game, game.width*3/9, 50)
     //game.add.existing(fps)
@@ -203,8 +214,8 @@ function create() {
     enemy_wave = game.add.group()
     updateHud()
 
-    timerEnemy  = game.time.create(false)
-   }
+    timerEnemy = game.time.create(false)
+}
 
 function loadFile() {
     var text = game.cache.getText('map1');
@@ -220,21 +231,21 @@ function createMap() {
         for (var col = 0; col < mapData[row].length; col++) {
             var tipo = mapData[row][col]
             var param = ''
-            if (col+1 < mapData[row].length) {
-                param = mapData[row][col+1]
+            if (col + 1 < mapData[row].length) {
+                param = mapData[row][col + 1]
             }
             if (tipo == 'X') {
-                var wall = map.create(col*32, row*32, 'wall')
+                var wall = map.create(col * 32, row * 32, 'wall')
                 wall.scale.setTo(0.5, 0.5)
                 game.physics.arcade.enable(wall)
                 wall.body.immovable = true
                 wall.tag = 'wall'
             } else
-            if (tipo == 'S') {
-                var saw = new Saw(game, col*32, row*32, 'saw', param) 
-                //game.add.existing(saw)
-                obstacles.add(saw)
-            }
+                if (tipo == 'S') {
+                    var saw = new Saw(game, col * 32, row * 32, 'saw', param)
+                    //game.add.existing(saw)
+                    obstacles.add(saw)
+                }
         }
     }
 }
@@ -249,7 +260,7 @@ function toggleFullScreen() {
 }
 
 function createText(x, y, text) {
-    var style = {font: 'bold 16px Arial', fill: 'white'}
+    var style = { font: 'bold 16px Arial', fill: 'white' }
     var text = game.add.text(x, y, text, style)
     //text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2)
     text.stroke = '#000000';
@@ -258,18 +269,18 @@ function createText(x, y, text) {
     return text
 }
 
-function createGameOverText(x,y,text){
-    var style = {font: 'bold 64px Arial', fill: 'white'}
-    var text = game.add.text(x,y,text,style)
+function createGameOverText(x, y, text) {
+    var style = { font: 'bold 64px Arial', fill: 'white' }
+    var text = game.add.text(x, y, text, style)
     text.stroke = '#000000';
     text.strokeThickness = 2;
     text.anchor.setTo(0.5, 0.5)
     return text
 }
 
-function createWaveText(x,y,text){
-    var style = {font: 'bold 32px Arial', fill: 'white'}
-    var text = game.add.text(x,y,text,style)
+function createWaveText(x, y, text) {
+    var style = { font: 'bold 32px Arial', fill: 'white' }
+    var text = game.add.text(x, y, text, style)
     text.stroke = '#000000';
     text.strokeThickness = 2;
     text.anchor.setTo(0.5, 0.5)
@@ -277,9 +288,9 @@ function createWaveText(x,y,text){
 }
 
 
-function createTimerText(x,y,text){
-    var style = {font: 'bold 64px Arial', fill: 'white'}
-    var text = game.add.text(x,y,text,style)
+function createTimerText(x, y, text) {
+    var style = { font: 'bold 64px Arial', fill: 'white' }
+    var text = game.add.text(x, y, text, style)
     text.stroke = '#000000';
     text.strokeThickness = 2;
     text.anchor.setTo(0.5, 0.5)
@@ -287,73 +298,61 @@ function createTimerText(x,y,text){
 }
 
 function updateBullets(bullets) {
-    bullets.forEach(function(bullet) {
+    bullets.forEach(function (bullet) {
         game.world.wrap(bullet, 0, true)
     })
 }
 
-function spawnEnemies(){
+function spawnEnemies() {
     canSpawnEnemy = false
     var i = 0
     var posX
     var posY
 
-    for(i=0; i<numberEnemies; i++){
+    for (i = 0; i < numberEnemies; i++) {
         var enemy
-        posX = game.rnd.integerInRange(-200,0)
-        posY = game.rnd.integerInRange(0,232)
-        enemy = enemy_wave.create(0,posY,'spiderEnemy')
+        posX = game.rnd.integerInRange(-200, 0)
+        posY = game.rnd.integerInRange(0, 232)
+        enemy = enemy_wave.create(0, posY, 'spiderEnemy')
         create_enemy_body(enemy)
         enemy.name = 'enemySpider'
-        enemy.scale.setTo(0.10,0.10)
+        enemy.scale.setTo(0.10, 0.10)
         enemy.health = config.SPIDER_HEALTH
         enemy.playerToFollow = flagFollowPlayer
-        flagFollowPlayer = flagFollowPlayer*(-1) 
+        flagFollowPlayer = flagFollowPlayer * (-1)
     }
 
-    for(i=0; i<(numberEnemies/2); i++){
+    for (i = 0; i < (numberEnemies / 2); i++) {
         var enemy
-        posX = game.rnd.integerInRange(1250,1300)
-        posY = game.rnd.integerInRange(0,300)
-        enemy = enemy_wave.create(posX,posY,'pacmanEnemy')
+        posX = game.rnd.integerInRange(1250, 1300)
+        posY = game.rnd.integerInRange(0, 300)
+        enemy = enemy_wave.create(posX, posY, 'pacmanEnemy')
         create_enemy_body(enemy)
         enemy.name = 'pacmanEnemy'
         enemy.scale.setTo(0.10, 0.10)
         enemy.health = config.SPIDER_HEALTH
         enemy.playerToFollow = flagFollowPlayer
-        flagFollowPlayer = flagFollowPlayer*(-1) 
+        flagFollowPlayer = flagFollowPlayer * (-1)
     }
-    enemiesAlive = numberEnemies + (numberEnemies/2)
+    enemiesAlive = numberEnemies + (numberEnemies / 2)
     numberEnemies = numberEnemies * 2
 }
 
-function followPlayer(enemy){
-    if(!player1.alive){
-        game.physics.arcade.moveToObject(enemy,player2,6000,1000)
-    }else if(!player2.alive){
-        game.physics.arcade.moveToObject(enemy,player1,6000,1000)        
-    }else if(enemy.playerToFollow < 0){
-        game.physics.arcade.moveToObject(enemy,player1,6000,1000)
-    }else{
-        game.physics.arcade.moveToObject(enemy,player2,6000,1000)
+function followPlayer(enemy) {
+    if (!player1.alive) {
+        game.physics.arcade.moveToObject(enemy, player2, 6000, 1000)
+    } else if (!player2.alive) {
+        game.physics.arcade.moveToObject(enemy, player1, 6000, 1000)
+    } else if (enemy.playerToFollow < 0) {
+        game.physics.arcade.moveToObject(enemy, player1, 6000, 1000)
+    } else {
+        game.physics.arcade.moveToObject(enemy, player2, 6000, 1000)
     }
 }
 
 
 
-function hitPlayer(player,enemy) {
-    if(!player.shield){
-        //player.damage(5)
-    }    
-}
 
-function hitEnemy(bullet,enemy) {
-    bullet.kill()
-    enemy.damage(1)
-    enemy.events.onKilled.add(function(){
-        enemy.destroy()
-    })
-}
 
 // da pra usar essa funcao se precisar que apenas um inimigo colida com o chão
 // function checkCollisionMapEnemies(enemy,map){
@@ -372,11 +371,11 @@ function hitEnemy(bullet,enemy) {
 //     }
 // }
 
-function showTimeToWave(){
-    if(!timerEnemy.expired){
-        hud.nextWaveTimer.text ='Next wave in: ' +  (parseInt(timerEnemy.duration/1000) + 1 )   
-    }else{
-        hud.nextWaveTimer.text = ''    
+function showTimeToWave() {
+    if (!timerEnemy.expired) {
+        hud.nextWaveTimer.text = 'Next wave in: ' + (parseInt(timerEnemy.duration / 1000) + 1)
+    } else {
+        hud.nextWaveTimer.text = ''
     }
 }
 
@@ -385,19 +384,19 @@ function showTimeToWave(){
 function update() {
     //verifyGameState()
     showTimeToWave()
-    if(canSpawnEnemy == true){
+    if (canSpawnEnemy == true) {
         canSpawnEnemy = false
         //timerEnemy = game.time.create(true)
-        timerEnemy.add(3*(Phaser.Timer.SECOND),spawnEnemies,this)
+        timerEnemy.add(3 * (Phaser.Timer.SECOND), spawnEnemies, this)
         //spawnEnemies()
-        waveNumber = waveNumber+1 
+        waveNumber = waveNumber + 1
         timerEnemy.start()
-    }else if((enemy_wave.countLiving() == 0 && timerEnemy.expired)){
+    } else if ((enemy_wave.countLiving() == 0 && timerEnemy.expired)) {
         canSpawnEnemy = true
     }
-    
-    
-    
+
+
+
     enemy_wave.forEachAlive(followPlayer)
 
     // game.physics.arcade.moveToObject(spiderEnemy,player2,6000,1500)
@@ -405,71 +404,93 @@ function update() {
     // game.physics.arcade.moveToObject(enemy_wave.getAt(0),player2,6000,1000)
     // game.physics.arcade.moveToObject(enemy_wave.getAt(1),player2,6000,1000)
     // game.physics.arcade.moveToObject(enemy_wave.getAt(2),player2,6000,1000)
-    
-    
+
+
     hud.wave.text = `Wave ${waveNumber}`
-    
+
     sky.tilePosition.x += 0.5
     fog.tilePosition.x += 0.3
-    
+
     game.physics.arcade.collide(player1, map)
     game.physics.arcade.collide(player2, map)
-    game.physics.arcade.collide(medkit, map)   
-    game.physics.arcade.collide(medkit2, map)   
-    game.physics.arcade.collide(shield, map)   
-    game.physics.arcade.collide(shield2, map)   
+    game.physics.arcade.collide(medkit, map)
+    game.physics.arcade.collide(medkit2, map)
+    game.physics.arcade.collide(shield, map)
+    game.physics.arcade.collide(shield2, map)
     // game.physics.arcade.collide(spiderEnemy, map)   
-    
-    
-    
+
+
+
     //moveAndStop(player1)
     updateBullets(player1.bullets)
     updateBullets(player2.bullets)
-    
-    game.physics.arcade.collide(player1, player2)      
-    
-    game.physics.arcade.collide(player1, medkit, addHealth)      
-    game.physics.arcade.collide(player1, medkit2,addHealth)      
-    game.physics.arcade.collide(player2, medkit, addHealth)      
-    game.physics.arcade.collide(player2, medkit2,addHealth)
 
-    game.physics.arcade.collide(player1, shield, enableShield)      
-    game.physics.arcade.collide(player1, shield2, enableShield)      
-    game.physics.arcade.collide(player2, shield, enableShield)      
-    game.physics.arcade.collide(player2, shield2, enableShield)      
-  
+    game.physics.arcade.collide(player1, player2)
+
+    game.physics.arcade.collide(player1, medkit, addHealth)
+    game.physics.arcade.collide(player1, medkit2, addHealth)
+    game.physics.arcade.collide(player2, medkit, addHealth)
+    game.physics.arcade.collide(player2, medkit2, addHealth)
+
+    game.physics.arcade.collide(player1, shield, enableShield)
+    game.physics.arcade.collide(player1, shield2, enableShield)
+    game.physics.arcade.collide(player2, shield, enableShield)
+    game.physics.arcade.collide(player2, shield2, enableShield)
+
     game.physics.arcade.collide(player1.bullets, map, killBullet)
     game.physics.arcade.collide(player2.bullets, map, killBullet)
-    
-    game.physics.arcade.collide(player1,enemy_wave,hitPlayer)
-    game.physics.arcade.collide(player2,enemy_wave,hitPlayer)
-    
-    game.physics.arcade.collide(player1.bullets,enemy_wave,hitEnemy)
-    game.physics.arcade.collide(player2.bullets,enemy_wave,hitEnemy)
-    
+
+    game.physics.arcade.collide(player1, enemy_wave, hitPlayer)
+    game.physics.arcade.collide(player2, enemy_wave, hitPlayer)
+
+    game.physics.arcade.collide(player1.bullets, enemy_wave, hitEnemy)
+    game.physics.arcade.collide(player2.bullets, enemy_wave, hitEnemy)
+
     // if((!player1.alive) && (!player2.alive)){
-        //     gameState = 'GameOver'
-        // }
-        
-        verifyGameOver()
-        updateHud()
-        
-        
-        
-        // game.physics.arcade.collide(enemy_wave, map, checkCollisionMapEnemies)
-        // game.physics.arcade.collide(player2,player1.bullets, hitPlayer)
-        // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)  
+    //     gameState = 'GameOver'
+    // }
+
+    verifyGameOver()
+    updateHud()
+
+
+
+    // game.physics.arcade.collide(enemy_wave, map, checkCollisionMapEnemies)
+    // game.physics.arcade.collide(player2,player1.bullets, hitPlayer)
+    // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)  
+}
+
+function hitPlayer(player, enemy) {
+    if (!player.shield) {
+        player.damage(1)
+        if (player.name == player1Name) {
+            player.x = startX_P1
+            player.y = startY_P1
+        } else {
+            player.x = startX_P2
+            player.y = startY_P2
+
+        }
     }
-    
-function verifyGameOver(){
-    if((!player1.alive) && (!player2.alive)){
-        var gameOver = createGameOverText(game.width/2, game.height/2, '     GAME OVER\nPress F5 to restart')
+}
+
+function hitEnemy(bullet, enemy) {
+    bullet.kill()
+    enemy.damage(1)
+    enemy.events.onKilled.add(function () {
+        enemy.destroy()
+    })
+}
+
+function verifyGameOver() {
+    if ((!player1.alive) && (!player2.alive)) {
+        var gameOver = createGameOverText(game.width / 2, game.height / 2, '     GAME OVER\nPress F5 to restart')
         game.paused = true
     }
 }
 
 
-function create_enemy_body(enemy){
+function create_enemy_body(enemy) {
     enemy.anchor.setTo(0.5, 0.5);
     game.physics.enable(enemy, Phaser.Physics.ARCADE);
     enemy.body.collideWorldBounds = false;
@@ -481,40 +502,40 @@ function killBullet(bullet, wall) {
     bullet.kill()
 }
 
-function hitPacman(pacmanEnemy, bullet){
-    if(pacmanEnemy.alive){
+function hitPacman(pacmanEnemy, bullet) {
+    if (pacmanEnemy.alive) {
         pacmanEnemy.damage(1)
         bullet.kill()
         updateHud()
     }
 }
 
-function disableShield(player){
+function disableShield(player) {
     player.shield = 0
 }
 
-function enableShield(player, shield){
+function enableShield(player, shield) {
     shield.kill()
     player.shield = 1
     var timerShield = game.time.create(true)
     var timerToReviveShield = game.time.create(true)
-    timerShield.add(5*(Phaser.Timer.SECOND),disableShield, this, player)
-    timerToReviveShield.add(2*(Phaser.Timer.SECOND),reviveMedkit, this, shield)
+    timerShield.add(5 * (Phaser.Timer.SECOND), disableShield, this, player)
+    timerToReviveShield.add(2 * (Phaser.Timer.SECOND), reviveMedkit, this, shield)
     timerShield.start()
     timerToReviveShield.start()
 }
 
-function addHealth(player, medkit){
-    player.heal(10)
+function addHealth(player, medkit) {
+    player.heal(1)
 
     var timer = game.time.create(true)
-    timer.add(2*(Phaser.Timer.SECOND), reviveMedkit, this, medkit)
+    timer.add(2 * (Phaser.Timer.SECOND), reviveMedkit, this, medkit)
     medkit.kill()
-    
+
     timer.start()
 }
 
-function reviveMedkit(m){
+function reviveMedkit(m) {
     m.revive(1)
     m.immovable = true
 }
@@ -527,18 +548,18 @@ function updateHud() {
 }
 
 function render() {
-   // game.debug.body(player1)
+    // game.debug.body(player1)
 
-    obstacles.forEach( function(obj) {
+    obstacles.forEach(function (obj) {
         game.debug.body(obj)
     })
-    
+
     //  game.debug.body(pacmanEnemy)
     // game.debug.body(medkit2)
     game.debug.body(shield)
     game.debug.body(shield2)
     // game.debug.body(shield2)
     // game.debug.body(enemy_wave.getAt(0))
-    
+
 }
 
