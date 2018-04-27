@@ -32,6 +32,7 @@ config.BULLET_VELOCITY = 700
 
 config.SPIDER_HEALTH = 2
 config.PACMAN_HEALTH = 5
+config.ROCKET_HEALTH = 10
 
 var sky
 var fog
@@ -39,6 +40,9 @@ var medkit                  //Medkit do lado esquerdo
 var medkit2                 //Medkit do lado direito
 var shield
 var shield2
+var rocket
+var qtdeRockets = 4
+var tweenRocket
 var player1
 var player2
 var player1Name = 'Player1'
@@ -54,6 +58,7 @@ var obstacles
 // var pacmanEnemy
 var numberEnemies = 2       //controla quantos inimigos serão gerados
 var canSpawnEnemy = true
+var canSpawnRockets = true
 var enemy_wave              //grupo que contém os inimigos
 var enemiesAlive = 0        //verifica quantos inimigos estão vivos
 var waveNumber = 0          //controla o número da wave
@@ -61,6 +66,15 @@ var flagFollowPlayer = -1        //flag que define qual player o inimigo tem que
 var gameState
 var timerEnemy
 var nextWaveTimer
+var rocketGroup = []
+var timerRocket
+var countRocket
+var tweenRocket
+var tween
+var tween2
+var tween3
+var tween4
+var controlTween
 
 var game = new Phaser.Game(config.RES_X, config.RES_Y, Phaser.CANVAS,
     'game-container',
@@ -84,6 +98,8 @@ function preload() {
     game.load.image('shield', 'assets/shield.png')
     game.load.image('pacmanEnemy', 'assets/pacman_enemy.png')
     game.load.image('spiderEnemy', 'assets/spider_enemy.png')
+    game.load.image('rocket', 'assets/rocket.png')
+    game.load.image('ghost', 'assets/ghost_mario.png')
 }
 
 function createBullets() {
@@ -160,23 +176,6 @@ function create() {
     game.physics.arcade.enable(medkit2)
     medkit2.body.immovable = true
 
-    // spiderEnemy = game.add.sprite(0,0,'spiderEnemy')
-    // spiderEnemy.x = 0
-    // spiderEnemy.y = 232
-    // spiderEnemy.anchor.setTo(0.5,0.5)
-    // spiderEnemy.scale.setTo(0.10,0.10)
-    // spiderEnemy.health = 20
-    // game.physics.arcade.enable(spiderEnemy)
-
-
-    // pacmanEnemy = game.add.sprite(0,0,'pacmanEnemy')
-    // pacmanEnemy.x = 1250
-    // pacmanEnemy.y = 232
-    // pacmanEnemy.anchor.setTo(0.5,0.5)
-    // pacmanEnemy.scale.setTo(0.10,0.10)
-    // pacmanEnemy.health = 30
-    // pacmanEnemy.tint = 0x0000ff
-    // game.physics.arcade.enable(pacmanEnemy)
 
     shield = game.add.sprite(0, 0, 'shield')
     shield.scale.setTo(0.15, 0.15)
@@ -184,11 +183,59 @@ function create() {
     shield.y = 224
     game.physics.arcade.enable(shield)
 
+    // var g = game.add.sprite(0,0,'ghost')
+    // g.x = 500
+    // g.y = 500
+    // g.scale.setTo(0.25,0.25)
+
     shield2 = game.add.sprite(0, 0, 'shield')
     shield2.scale.setTo(0.15, 0.15)
     shield2.x = 1220
     shield2.y = 224
     game.physics.arcade.enable(shield2)
+
+    
+
+    // rocketGroup = game.add.group()
+
+    // // var enemy
+    // // posX = -50
+    // // posY = game.rnd.integerInRange(32, 700)
+    // // create_enemy_body(enemy)
+    // // enemy.name = 'rocketEnemy'
+    // // enemy.scale.setTo(0.10, 0.10)
+    // // enemy.health = config.ROCKET_HEALTH
+   
+
+    for(var i=0;i<qtdeRockets;i++){
+        var enemy
+        enemy = game.add.sprite(0,0,'rocket')
+        var posX = -50
+        var posY = game.rnd.integerInRange(32,700)
+        create_enemy_body(enemy)
+        enemy.name = 'rocketEnemy'
+        enemy.scale.setTo(0.10,0.10)
+        enemy.health = config.ROCKET_HEALTH
+        enemy.x = posX
+        enemy.y = posY
+        enemy.collideWorldBounds = true
+        rocketGroup[i] = enemy
+    }
+
+    controlTween = 0
+    tween = game.add.tween(rocketGroup[0]).to({ x: 1400 }, 3000, 'Linear', false, 0, -1, true)
+    tween2 = game.add.tween(rocketGroup[1]).to({ x: 1400 }, 3000, 'Linear', false, 0, -1, true)
+    tween3 = game.add.tween(rocketGroup[2]).to({ x: 1400 }, 3000, 'Linear', false, 0, -1, true)
+    tween4 = game.add.tween(rocketGroup[3]).to({ x: 1400 }, 3000, 'Linear', false, 0, -1, true)
+    //startTween()
+
+    timerRocket = game.time.create(true)
+    timerRocket.repeat(8000,4,startTween,this)
+    timerRocket.start()
+
+
+
+
 
 
     hud = {
@@ -240,12 +287,7 @@ function createMap() {
                 game.physics.arcade.enable(wall)
                 wall.body.immovable = true
                 wall.tag = 'wall'
-            } else
-                if (tipo == 'S') {
-                    var saw = new Saw(game, col * 32, row * 32, 'saw', param)
-                    //game.add.existing(saw)
-                    obstacles.add(saw)
-                }
+            } 
         }
     }
 }
@@ -308,15 +350,22 @@ function spawnEnemies() {
     var i = 0
     var posX
     var posY
+    var rand
 
     for (i = 0; i < numberEnemies; i++) {
         var enemy
-        posX = game.rnd.integerInRange(-200, 0)
-        posY = game.rnd.integerInRange(0, 232)
-        enemy = enemy_wave.create(0, posY, 'spiderEnemy')
+        rand = game.rnd.integerInRange(0,1)
+        if (rand == 0){
+            posX = game.rnd.integerInRange(-200, 0)
+            posY = game.rnd.integerInRange(0, 232)
+        }else{
+            posX = game.rnd.integerInRange(1250, 1300)
+            posY = game.rnd.integerInRange(0, 300)
+        }        
+        enemy = enemy_wave.create(posX, posY, 'ghost')
         create_enemy_body(enemy)
         enemy.name = 'enemySpider'
-        enemy.scale.setTo(0.10, 0.10)
+        enemy.scale.setTo(0.25, 0.25)
         enemy.health = config.SPIDER_HEALTH
         enemy.playerToFollow = flagFollowPlayer
         flagFollowPlayer = flagFollowPlayer * (-1)
@@ -324,8 +373,13 @@ function spawnEnemies() {
 
     for (i = 0; i < (numberEnemies / 2); i++) {
         var enemy
-        posX = game.rnd.integerInRange(1250, 1300)
-        posY = game.rnd.integerInRange(0, 300)
+        if (rand == 0){
+            posX = game.rnd.integerInRange(-200, 0)
+            posY = game.rnd.integerInRange(0, 232)
+        }else{
+            posX = game.rnd.integerInRange(1250, 1300)
+            posY = game.rnd.integerInRange(0, 300)
+        }
         enemy = enemy_wave.create(posX, posY, 'pacmanEnemy')
         create_enemy_body(enemy)
         enemy.name = 'pacmanEnemy'
@@ -334,12 +388,34 @@ function spawnEnemies() {
         enemy.playerToFollow = flagFollowPlayer
         flagFollowPlayer = flagFollowPlayer * (-1)
     }
+
+    var valor = parseInt(waveNumber)
+    // for(i=0;i<valor;i++){
+    //     var enemy
+    //     posX = -50
+    //     posY = game.rnd.integerInRange(32,700)
+    //     enemy = enemy_wave.create(posX,posY, 'rocket')
+    //     create_enemy_body(enemy)
+    //     enemy.name = 'rocketEnemy'
+    //     enemy.scale.setTo(0.10,0.10)
+    //     enemy.health = config.ROCKET_HEALTH
+    //     enemy.playerToFollow = 2
+    //     console.log(valor)
+    // }
+
     enemiesAlive = numberEnemies + (numberEnemies / 2)
     numberEnemies = numberEnemies * 2
 }
 
 function followPlayer(enemy) {
-    if (!player1.alive) {
+    /*if(enemy.name == 'rocketEnemy'){
+        var rocketX = enemy.x
+        var rockety = enemy.y
+        tweenRocket = game.add.tween(enemy).to({x:rocketX + 1450})
+                                         .to({x:-50})
+                                         
+    }
+    else*/ if (!player1.alive) {
         game.physics.arcade.moveToObject(enemy, player2, 6000, 1000)
     } else if (!player2.alive) {
         game.physics.arcade.moveToObject(enemy, player1, 6000, 1000)
@@ -379,10 +455,34 @@ function showTimeToWave() {
     }
 }
 
+function tweenRockets(){
+       tweenRocket = game.add.tween(rocketGroup[countRocket]).to({ x: 1400 }, 2000, 'Linear', true, 0, -1, true)
+       countRocket++
+       console.log(countRocket)
+       canSpawnRockets = true
+}
 
+function startTween(){ 
+    if(controlTween == 0){
+        tween.start()
+        controlTween++
+    }else if(controlTween == 1){
+        tween2.start()
+        controlTween++
+    }else if(controlTween == 2){
+        tween3.start()
+        controlTween++
+    }else if(controlTween == 3){
+        tween4.start()
+        controlTween++
+    }
+
+}
 
 function update() {
     //verifyGameState()
+    // timerRocket.start()
+    
     showTimeToWave()
     if (canSpawnEnemy == true) {
         canSpawnEnemy = false
@@ -394,8 +494,7 @@ function update() {
     } else if ((enemy_wave.countLiving() == 0 && timerEnemy.expired)) {
         canSpawnEnemy = true
     }
-
-
+   
 
     enemy_wave.forEachAlive(followPlayer)
 
@@ -446,6 +545,20 @@ function update() {
     game.physics.arcade.collide(player1.bullets, enemy_wave, hitEnemy)
     game.physics.arcade.collide(player2.bullets, enemy_wave, hitEnemy)
 
+    game.physics.arcade.collide(player1, rocketGroup[0], hitPlayer)
+    game.physics.arcade.collide(player1, rocketGroup[1], hitPlayer)
+    game.physics.arcade.collide(player1, rocketGroup[2], hitPlayer)
+    game.physics.arcade.collide(player1, rocketGroup[3], hitPlayer)
+
+    game.physics.arcade.collide(player2, rocketGroup[0], hitPlayer)
+    game.physics.arcade.collide(player2, rocketGroup[1], hitPlayer)
+    game.physics.arcade.collide(player2, rocketGroup[2], hitPlayer)
+    game.physics.arcade.collide(player2, rocketGroup[3], hitPlayer)
+
+    // verifySideRocket()
+    
+    // console.log(rocketGroup[0].body.angularVelocity)
+
     // if((!player1.alive) && (!player2.alive)){
     //     gameState = 'GameOver'
     // }
@@ -460,6 +573,19 @@ function update() {
     // game.physics.arcade.collide(player1,player2.bullets, hitPlayer)  
 }
 
+function verifySideRocket(){
+   for(var i=0;i<qtdeRockets;i++){
+       
+      // var prev = game.physics.arcade.prev(rocketGroup[i])
+       if(prev.x > rocketGroup[i].x){
+           rocketGroup[i].scale.setTo(-0.10,0.10)
+        }else{
+            rocketGroup[i].scale.setTo(0.10,0.10)
+       }
+   }
+}
+
+
 function hitPlayer(player, enemy) {
     if (!player.shield) {
         player.damage(1)
@@ -468,7 +594,7 @@ function hitPlayer(player, enemy) {
             player.y = startY_P1
         } else {
             player.x = startX_P2
-            player.y = startY_P2
+            player.y = startY_P2 + 10
 
         }
     }
@@ -520,7 +646,7 @@ function enableShield(player, shield) {
     var timerShield = game.time.create(true)
     var timerToReviveShield = game.time.create(true)
     timerShield.add(5 * (Phaser.Timer.SECOND), disableShield, this, player)
-    timerToReviveShield.add(2 * (Phaser.Timer.SECOND), reviveMedkit, this, shield)
+    timerToReviveShield.add(10 * (Phaser.Timer.SECOND), reviveBooster, this, shield)
     timerShield.start()
     timerToReviveShield.start()
 }
@@ -529,13 +655,13 @@ function addHealth(player, medkit) {
     player.heal(1)
 
     var timer = game.time.create(true)
-    timer.add(2 * (Phaser.Timer.SECOND), reviveMedkit, this, medkit)
+    timer.add(8 * (Phaser.Timer.SECOND), reviveBooster, this, medkit)
     medkit.kill()
 
     timer.start()
 }
 
-function reviveMedkit(m) {
+function reviveBooster(m) {
     m.revive(1)
     m.immovable = true
 }
@@ -543,8 +669,17 @@ function reviveMedkit(m) {
 function updateHud() {
     hud.text1.text = `PLAYER 1: ${player1.health}`
     hud.text2.text = 'PLAYER 2: ' + player2.health
-    hud.text3.text = 'SHIELD: ' + enemy_wave.countLiving()
-    //hud.text4.text = 'SHIELD: ' + player2.shield
+    if(player1.shield == 1){
+        hud.text3.text = 'SHIELD: ENABLE '  
+    }else{
+        hud.text3.text = 'SHIELD: DISABLE' 
+    }
+    if(player2.shield == 1){
+        hud.text4.text = 'SHIELD: ENABLE '  
+    }else{
+        hud.text4.text = 'SHIELD: DISABLE' 
+    }
+    // hud.text4.text = 'SHIELD: ' + rocketGroup.countLiving()
 }
 
 function render() {
@@ -556,9 +691,9 @@ function render() {
 
     //  game.debug.body(pacmanEnemy)
     // game.debug.body(medkit2)
-    game.debug.body(shield)
-    game.debug.body(shield2)
+    // game.debug.body(shield)
     // game.debug.body(shield2)
+    // game.debug.body(rocket)
     // game.debug.body(enemy_wave.getAt(0))
 
 }

@@ -40,7 +40,8 @@ class PlayerTeste extends Phaser.Sprite {
         }
         
 
-        if(this.cursors.up.isDown && this.body.touching.down){
+        if(this.cursors.up.isDown && (this.body.touching.down || this.body.onFloor())){
+        //if(this.cursors.up.isDown && this.body.onFloor()){
             this.body.velocity.y = -config.PLAYER_JUMP
         }
         
